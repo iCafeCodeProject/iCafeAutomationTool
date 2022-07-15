@@ -15,10 +15,19 @@ This tool is ONLY FOR game test purpose.
         * pip install PyQt5  
         * pip install pyqt5-tools  
     * opencv-python:  
-        * pip install opencv-python==4.5.3.56(Recommended)  
+        * pip install opencv-python==4.5.3.56(Recommended) 
+        
 ### Getting Started
 * Step 1: Download the entire project  
 * Step 2: Install Pycharm and config Python 3.7 environment  
 * Step 3: Open the project folder in Pycharm  
 * Step 4: run gui.py
+
+### Release Notes
+* Version 1.0
+   * Release date: 2022/7/17
+   * Known issues:
+      * Mouse move simulation is not surpported in Genshin impact
+
+
 
