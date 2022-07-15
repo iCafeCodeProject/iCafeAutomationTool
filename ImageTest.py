@@ -9,59 +9,21 @@
 
 
 # 导入所需Package
-import time
-import cv2
-import os
-from PIL import ImageGrab
-from PIL import Image
+# import cv2
+from cv2 import resize, cvtColor, Laplacian, CV_64F, COLOR_BGR2GRAY, INTER_CUBIC
 import numpy as np
-import matplotlib.pyplot as plt
-import openpyxl
-
-wb = openpyxl.Workbook()
-ws = wb.create_sheet("原神运行数据")
-ws.cell(row = 1, column =1).value = "Image"
-ws.cell(row = 1, column =2).value = "ImageVar"
 
 
-
-
-# 方法一：截取图片并判断
-start = time.time_ns()
-
-k = 2
-g = 2
-t = 1000
-thresholdmin = 100
-thresholdmax = 3000
-
-for x in range(t):
-    image = ImageGrab.grab()
+def image_processing(threshold_min, threshold_max, image, ui):
     imagenum = np.asarray(image)
-    # plt.imshow(image)
-    # plt.show()
-
     imsize = imagenum.shape
-    imagenum = cv2.resize(imagenum, (int(imsize[1] / 2), int(imsize[0] / 2)), interpolation=cv2.INTER_CUBIC)
-    gray = cv2.cvtColor(imagenum, cv2.COLOR_BGR2GRAY)
-    imageVar = cv2.Laplacian(gray, cv2.CV_64F).var()
-    imageVar = int(imageVar)
-    time.sleep(1)
-    if imageVar < thresholdmin or imageVar > thresholdmax:
-        # cv2.imshow('', image)
-        # cv2.waitKey(0)
-        # print(str(x) + '  imageVar: %d' % (imageVar))
-
-        ws.cell(row=k, column=1).value = str(x)
-        ws.cell(row=g, column=2).value = str(imageVar)
-        k = k + 1
-        g = g + 1
-        wb.save("运行数据.xlsx")
-        image.save("./imagefail/" + str(x) +"_"+ str(imageVar)+ ".png")
-
-
-end = time.time_ns()
-print('running spend: ' + str((end - start) / 1000 / 1000 / 1000) + 's')
+    imagenum = resize(imagenum, (int(imsize[1] / 2), int(imsize[0] / 2)), interpolation=INTER_CUBIC)
+    gray = cvtColor(imagenum, COLOR_BGR2GRAY)
+    imageVar = Laplacian(gray, CV_64F).var()
+    if imageVar < threshold_min or imageVar > threshold_max:
+        return 1
+    else:
+        return 0
 
 
 # # 方法二：保存图片并判断
@@ -105,3 +67,44 @@ print('running spend: ' + str((end - start) / 1000 / 1000 / 1000) + 's')
 #         # cv2.waitKey(0)
 #         print(filename + '  imageVar: %d' % (imageVar))
 #         cv2.imwrite("./imagefail/" + str(x) + ".png",image)
+
+
+# if __name__ == '__main__':
+#     file = readDataset('./image')
+#     plt.imshow(data[0])
+#     plt.show()
+
+# cv2.imshow('', gray)
+# cv2.waitKey(2000)
+# plt.imshow(image/255)
+# plt.show()
+
+# def readDataset(dirpath, shape, mode=0):
+#     if os.path.isdir(dirpath) == False:
+#         raise AssertionError
+#     files = os.listdir(dirpath)
+#     files_num = len(files)
+#     if mode == 0:
+#         data = np.zeros(shape=(files_num,shape[0],shape[1],shape[2]))
+#     else:
+#         data = ['']*files_num
+#
+#     i = 0
+#     for filename in files:
+#         filename = os.path.join(dirpath,filename)
+#         # print(filename)
+#         if mode == 0:
+#             image = cv2.imread(filename)
+#             image = cv2.resize(image, shape[:2], interpolation=cv2.INTER_CUBIC)
+#             data[i] = image / 255
+#         else:
+#             data[i] = filename
+#         i += 1
+#     return data
+#
+# if __name__ == '__main__':
+#     data = readDataset('./image',)
+#     plt.imshow(data[0])
+#     plt.show()
+
+
