@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QHeaderView, QTableWidgetItem, QComboBox
 from functools import partial
 from ctypes import windll
+from ImageTest import image_processing
+from PIL import ImageGrab
 import game_info_table
 import virtual_input_service
 import iCafe_Automation_Tool
@@ -10,15 +12,19 @@ import os
 import sys
 import ctypes
 import tkinter
+import datetime
+from threading import Thread
+import threading
 
 # Global variable define
-version = 'v0.1'
+version = 'v1.0'
 global_setting = class_define.GlobalSettings()
 app = QApplication(sys.argv)
 MainWindow = QMainWindow()
 UI = iCafe_Automation_Tool.Ui_MainWindow()
 UI.setupUi(MainWindow)
 path = str(os.getcwd() + '\\scripts\\')
+IQA_path = str(os.getcwd() + '\\failed_images\\')
 default_script_name = 'default_script.txt'
 fraps_window_name = 'FRAPS fps'
 max_range = 10
@@ -28,6 +34,17 @@ screen_size_x = root.winfo_screenwidth()
 screen_size_y = root.winfo_screenheight()
 pos_x = screen_size_x / 2
 pos_y = screen_size_y / 2
+default_IQA_threshold_min = '100'
+default_IQA_threshold_max = '3000'
+min_threshold = 0
+max_threshold = 10000
+IQA_threshold_range = []
+stop_flag = 1
+lock = threading.Lock()
+
+for num in range(min_threshold, max_threshold+1):
+    IQA_threshold_range.append(str(num))
+
 for num in range(0, max_range):
     supported_range.append(str(num))
     supported_range.append(str(num) + '.5')
@@ -81,6 +98,7 @@ def operation_list_generator(ui, start_step):
 
 # Main execution function
 def operation_execution(operation_list, pos_x, pos_y):
+    global stop_flag
     # Read global settings
     addr, offset = global_setting.setting_table.get('game_name')
     game_name = addr[offset]
@@ -95,6 +113,7 @@ def operation_execution(operation_list, pos_x, pos_y):
     if game_window_name == 'unsupported language':
         msg = str("[op_exec]: local language is unsupported! execution aborted!")
         UI.msg_print(msg)
+        stop_flag = 0
         return 1
 
     total_steps = len(operation_list)
@@ -113,6 +132,7 @@ def operation_execution(operation_list, pos_x, pos_y):
             if block_x > 4 or block_y > 4:
                 msg = str("[op_exec]: step %s failed! unsupported cursor position" % operation_list[i].step)
                 UI.msg_print(msg)
+                stop_flag = 0
                 return -1
             pos_x = (block_x - 1) * screen_size_x/4 + screen_size_x/8
             pos_y = (block_y - 1) * screen_size_y/4 + screen_size_y/8
@@ -120,31 +140,64 @@ def operation_execution(operation_list, pos_x, pos_y):
             if result != 0:
                 msg = str("[op_exec]: step %s failed!" % operation_list[i].step)
                 UI.msg_print(msg)
+                stop_flag = 0
                 return -1
 
         # Normal keyboard and mouse click path
         else:
             while repeat > 0:
+                lock.acquire()
                 result = virtual_input_service.key_strike_generator(key, 'press', input_mode, game_window_name, UI, pos_x, pos_y)
                 if result != 0:
                     msg = str("[op_exec]: step %s failed!" % operation_list[i].step)
                     UI.msg_print(msg)
+                    stop_flag = 0
+                    lock.release()
                     return -1
                 if operation_list[i].time not in supported_range:
                     msg = str("[op_exec]: step %s failed! unsupported execution time!" % operation_list[i].step)
                     UI.msg_print(msg)
+                    stop_flag = 0
+                    lock.release()
                     return -1
                 time.sleep(float(operation_list[i].time))
                 result = virtual_input_service.key_strike_generator(key, 'release', input_mode, game_window_name, UI, pos_x, pos_y)
                 if result != 0:
                     msg = str("[op_exec]: step %s failed!" % operation_list[i].step)
                     UI.msg_print(msg)
+                    stop_flag = 0
+                    lock.release()
                     return -1
                 repeat = repeat - 1
             msg = str("[op_exec]: step: %s complete!" % operation_list[i].step)
             UI.msg_print(msg)
             UI.progressBar.setValue(int(operation_list[i].step))
             QApplication.processEvents()
+            lock.release()
+    lock.acquire()
+    stop_flag = 0
+    lock.release()
+    return 0
+
+
+def IQA_image_process(threshold_min, threshold_max):
+    global stop_flag
+    im_num = 0
+    lock.acquire()
+    addr, offset = global_setting.setting_table.get('game_name')
+    game_name = addr[offset]
+    lock.release()
+    run_path = IQA_path + str(game_name + '_'+datetime.datetime.now().strftime('%m-%d-%H-%M-%S') + '\\')
+    os.mkdir(run_path)
+    while stop_flag:
+        image = ImageGrab.grab()
+        result = image_processing(threshold_min, threshold_max, image, UI)
+        if result == 1:
+            msg = str("[IQA]: Image %d fail detected!" % im_num)
+            UI.msg_print(msg)
+            image.save(run_path + str(im_num) + ".png")
+            im_num = im_num + 1
+        time.sleep(1)
     return 0
 
 
@@ -187,6 +240,16 @@ def gui_init(ui):
             script_load(UI)
         elif i == ui.comboBox_Select_Script.count()-1:
             ui.comboBox_Select_Script.setCurrentIndex(0)
+
+    result = os.path.exists(IQA_path)
+    if result == 0:
+        os.mkdir(IQA_path)
+    ui.comboBox_Select_IQA.addItem('Enable')
+    ui.comboBox_Select_IQA.addItem('Disable')
+    ui.comboBox_Select_IQA.setCurrentIndex(0)
+
+    ui.lineEdit_Threshold_Min.setText(default_IQA_threshold_min)
+    ui.lineEdit_Threshold_Max.setText(default_IQA_threshold_max)
 
 
 def script_load(ui):
@@ -527,13 +590,33 @@ def script_run(ui):
         msg = str("[run]: script: %s execution failed!" % script_file_name)
         ui.msg_print(msg)
         return 0
-    result = operation_execution(operation_list, pos_x, pos_y)
-    if result != 0:
-        msg = str("[run]: script: %s execution failed!" % script_file_name)
+    if ui.comboBox_Select_IQA.currentText() == 'Enable':
+        global stop_flag
+        stop_flag = 1
+        IQA_threshold_max = ui.lineEdit_Threshold_Max.text()
+        IQA_threshold_min = ui.lineEdit_Threshold_Min.text()
+        if IQA_threshold_max not in IQA_threshold_range or IQA_threshold_min not in IQA_threshold_range:
+            msg = str("[run]: unsupported IQA parameter! min: %s max: %s" % (IQA_threshold_min, IQA_threshold_max))
+            UI.msg_print(msg)
+            return 0
+        else:
+            IQA_thread = Thread(target=IQA_image_process, args=(int(IQA_threshold_min), int(IQA_threshold_max)))
+            IQA_thread.start()
+            result = operation_execution(operation_list, pos_x, pos_y)
+            if result != 0:
+                msg = str("[run]: script: %s execution failed!" % script_file_name)
+                UI.msg_print(msg)
+                return 0
+            msg = str("[run]: script %s execution complete!" % script_file_name)
+            UI.msg_print(msg)
+    else:
+        result = operation_execution(operation_list, pos_x, pos_y)
+        if result != 0:
+            msg = str("[run]: script: %s execution failed!" % script_file_name)
+            UI.msg_print(msg)
+            return 0
+        msg = str("[run]: script %s execution complete!" % script_file_name)
         UI.msg_print(msg)
-        return 0
-    msg = str("[run]: script %s execution complete!" % script_file_name)
-    UI.msg_print(msg)
     return 0
 
 
@@ -597,7 +680,6 @@ if __name__ == '__main__':
     UI.pushButton_Refresh.clicked.connect(partial(script_refresh, UI))
     UI.pushButton_Insert.clicked.connect(partial(script_insert, UI))
     UI.pushButton_Remove.clicked.connect(partial(script_remove, UI))
-
 
     sys.exit(app.exec_())
 
