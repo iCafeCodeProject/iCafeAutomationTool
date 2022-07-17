@@ -2,7 +2,7 @@
 ## Overview
 iCafe Automation tool is an automative game test tool developed by iCafe team.   
 This tool enables test engineers design, edit and run game test script for mulitple scenarios like performance test, long-time stress test, GFX sanity test and etc.   
-**`This tool is ONLY FOR game test purpose use.`**
+**`This tool is ONLY FOR game test purpose use.`**  
 **`Any cheat behavior in game is not recommmaned and may cause property lost`**
 
 ## Setup Development Environment
