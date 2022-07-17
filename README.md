@@ -1,7 +1,7 @@
 # iCafe Automation Tool
 ## Overview
 iCafe Automation tool is an automative game test tool developed by iCafe team.   
-This tool enables test engineers design, edit and run game test script for mulitple scenarios like performance test, long-time stress test, GFX sanity test and etc.   
+This tool enables test engineers design, edit and run game test script for mulitple test scenarios like performance test, long-time stress test and GFX sanity test.  
 **`This tool is ONLY FOR game test purpose use.`**  
 **`Any cheat behavior in game is not recommmaned and may cause property lost`**
 
@@ -12,7 +12,7 @@ This tool enables test engineers design, edit and run game test script for mulit
     * Windows 11 (21H2 or newer) 
 
 * Python Development Environment:  
-    * Python 3.7 or newer
+    * Python 3.7 or newer (Python 3.10 is not supported)
     * Anaconda3 for windows 64bit
     * Pycharm 2022 Community
 
@@ -22,12 +22,12 @@ This tool enables test engineers design, edit and run game test script for mulit
 ### Getting Started
 * Step 1: Download the source code and put them in one folder
 * Step 2: Create and activate a conda environment in cmd prompt.
-    ```
+    ```shell
     conda create --name yourEnvName python=3.7.0
     activate yourEnvName 
     ```
 * Step 3: Install required 3rd Libraries.
-    ```
+    ```shell
     pip install PyQt5  
     pip install pyqt5-tools
     pip install opencv-python==4.5.3.56(Recommended) 
@@ -39,12 +39,15 @@ This tool enables test engineers design, edit and run game test script for mulit
 ## Release Notes
 ### Version 1.0
 `Release date: 2022/7/15`
+
+**Update list:**
+
 | **Category** | **Contributor** | **Changed item** |
 | :------- | :---------- | :----------- |
-|GUI design|[Junda Li](https://github.com/JundaLi07)| Designed v1.0 GUI|
-|GUI logic|[Junda Li](https://github.com/JundaLi07)| Implemented logic funcions for v1.0 GUI|
-|Input Simulator|[Junda Li](https://github.com/JundaLi07)|Implemented `post_message` SW input method|
-|Image Quality Assessment|[Zhuangzhuang Liang](https://github.com/liangzhuangzhuang)|Implemented `real-time edge detection` method|  
+|GUI design|[Junda Li](https://github.com/JundaLi07 "Click to access his main page")| Designed v1.0 GUI|
+|GUI logic|[Junda Li](https://github.com/JundaLi07 "Click to access his main page")| Implemented logic funcions for v1.0 GUI|
+|Input Simulator|[Junda Li](https://github.com/JundaLi07 "Click to access his main page")|Implemented `post_message` SW input method|
+|Image Quality Assessment|[Zhuangzhuang Liang](https://github.com/liangzhuangzhuang "Click to access his main page")|Implemented `real-time edge detection` method|  
 
 **Known issues & limitations:**
 * Currently can only support Genshin Impact game test
