@@ -10,6 +10,7 @@ This tool enables test engineers design, edit and run game test script for mulit
 * Operating systems:  
     * Windows 10 (21H1 or newer)  
     * Windows 11 (21H2 or newer) 
+    * MacOS is not surpported yet
 
 * Python Development Environment:  
     * Python 3.7 or newer (Python 3.10 is not supported)
