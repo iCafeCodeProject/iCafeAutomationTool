@@ -16,6 +16,8 @@ This tool is ONLY FOR game test purpose.
         * pip install pyqt5-tools  
     * opencv-python:  
         * pip install opencv-python==4.5.3.56(Recommended) 
+    * Pillow:  
+        * pip install Pillow 
         
 ### Getting Started
 * Step 1: Download the entire project  
