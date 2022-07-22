@@ -17,7 +17,7 @@ from threading import Thread
 import threading
 
 # Global variable define
-version = 'v1.0'
+version = 'v1.1'
 global_setting = class_define.GlobalSettings()
 app = QApplication(sys.argv)
 MainWindow = QMainWindow()
@@ -146,15 +146,16 @@ def operation_execution(operation_list, pos_x, pos_y):
         # Normal keyboard and mouse click path
         else:
             while repeat > 0:
-                lock.acquire()
                 result = virtual_input_service.key_strike_generator(key, 'press', input_mode, game_window_name, UI, pos_x, pos_y)
                 if result != 0:
+                    lock.acquire()
                     msg = str("[op_exec]: step %s failed!" % operation_list[i].step)
                     UI.msg_print(msg)
                     stop_flag = 0
                     lock.release()
                     return -1
                 if operation_list[i].time not in supported_range:
+                    lock.acquire()
                     msg = str("[op_exec]: step %s failed! unsupported execution time!" % operation_list[i].step)
                     UI.msg_print(msg)
                     stop_flag = 0
@@ -163,6 +164,7 @@ def operation_execution(operation_list, pos_x, pos_y):
                 time.sleep(float(operation_list[i].time))
                 result = virtual_input_service.key_strike_generator(key, 'release', input_mode, game_window_name, UI, pos_x, pos_y)
                 if result != 0:
+                    lock.acquire()
                     msg = str("[op_exec]: step %s failed!" % operation_list[i].step)
                     UI.msg_print(msg)
                     stop_flag = 0
@@ -173,7 +175,6 @@ def operation_execution(operation_list, pos_x, pos_y):
             UI.msg_print(msg)
             UI.progressBar.setValue(int(operation_list[i].step))
             QApplication.processEvents()
-            lock.release()
     lock.acquire()
     stop_flag = 0
     lock.release()
@@ -238,6 +239,7 @@ def gui_init(ui):
             UI.msg_print(msg)
             ui.comboBox_Select_Script.setCurrentIndex(i)
             script_load(UI)
+            break
         elif i == ui.comboBox_Select_Script.count()-1:
             ui.comboBox_Select_Script.setCurrentIndex(0)
 
@@ -253,14 +255,20 @@ def gui_init(ui):
 
 
 def script_load(ui):
-    # clear current loaded script
-    ui.tableWidget_Script_Display.setRowCount(0)
-    # load new script
     script_file_name = str(path + ui.comboBox_Select_Script.currentText())
     if ui.comboBox_Select_Script.currentText() == '<Not Selected>':
         msg = str('[load]: please choose a script!')
         ui.msg_print(msg)
         return 0
+    # Check file still exists:
+    results = os.path.exists(str(path + ui.comboBox_Select_Script.currentText()))
+    if results == 0:
+        msg = str("[load]: selected file don't exists! please press refresh button to check!")
+        ui.msg_print(msg)
+        return 0
+    # clear current loaded script
+    ui.tableWidget_Script_Display.setRowCount(0)
+    # load new script
     script = open(script_file_name).readlines()
     if len(script) == 0:
         msg = str('[load]: empty file: %s ! please choose another one' % ui.comboBox_Select_Script.currentText())
@@ -520,6 +528,10 @@ def script_save(ui):
         operation = ui.tableWidget_Script_Display.cellWidget(i, 1).currentText()
         execution_time = ui.tableWidget_Script_Display.item(i, 2).text()
         repeat_times = ui.tableWidget_Script_Display.item(i, 3).text()
+        if operation == 'un-supported operation':
+            msg = str('[save] step %s operation is not supported, please choose a supported one and retry!' % step)
+            ui.msg_print(msg)
+            return 0
         if execution_time == '' or repeat_times == '':
             msg = str('[save]: step %s has no execution time or repeat time! please retry!' % step)
             ui.msg_print(msg)
@@ -627,6 +639,7 @@ def script_refresh(ui):
     # clear current script list and re-scan script folder
     current_script = ui.comboBox_Select_Script.currentText()
     ui.comboBox_Select_Script.clear()
+    ui.comboBox_Select_Script.addItem('<Not Selected>')
     result = os.path.exists(path)
     if result == 0:  # create script folder if not exist
         os.mkdir(path)
@@ -640,8 +653,7 @@ def script_refresh(ui):
             ui.comboBox_Select_Script.setCurrentIndex(i)
             break
         elif i == ui.comboBox_Select_Script.count() - 1:
-            ui.comboBox_Select_Script.addItem('<Not Selected>')
-            ui.comboBox_Select_Script.setCurrentIndex(i + 1)
+            ui.comboBox_Select_Script.setCurrentIndex(0)
 
     # apply game changes
     game_name = ui.comboBox_Game_Name.currentText()

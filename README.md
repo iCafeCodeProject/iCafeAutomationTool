@@ -31,7 +31,8 @@ This tool enables test engineers design, edit and run game test script for mulit
     ```shell
     pip install PyQt5  
     pip install pyqt5-tools
-    pip install opencv-python==4.5.3.56(Recommended) 
+    pip install opencv-python==4.5.3.56(Recommended)
+    pip install Pillow
     ```   
 * Step 4: Run Pycharm **as administrator** and open source code folder as a project.
 * Step 5: Select the conda environment your created earlier as the project interpreter.
@@ -55,6 +56,21 @@ This tool enables test engineers design, edit and run game test script for mulit
 * SW Mouse movement is not working in Genshin Impact game
 * Setting different language between OS and game will cause target window not found issue.
 * This project can only run on windows platform.
+
+### Version 1.1
+`Released date: 2022/7/22`
+
+**Update list:**
+
+| **Category** | **Contributor** | **Changed item** |
+| :------- | :---------- | :----------- |
+|GUI logic|[Junda Li](https://github.com/JundaLi07 "Click to access his main page")| Bug Fixes|
+
+**Bug fixes & Optimizations**  
+* Fixed app crash issue when repeat times >2 or repeat time = 0  
+* Fixed app crash issue when loading script afer default folder removed.  
+* Fixed operation name from "un-supported operation" to "idle" after click save.  
+* Removed redundant packages to improve app loading speed.
 
 
 
