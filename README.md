@@ -57,17 +57,19 @@ This tool enables test engineers design, edit and run game test script for mulit
 * This project can only run on windows platform.
 
 ### Version 1.1
+`Released date: 2022/7/22`
+
 **Update list:**
 
 | **Category** | **Contributor** | **Changed item** |
 | :------- | :---------- | :----------- |
 |GUI logic|[Junda Li](https://github.com/JundaLi07 "Click to access his main page")| Bug Fixes|
 
-**Bug fixes**
-1.Fixed app crash issue when repeat times >2 or repeat time = 0
-2.Fixed app crash issue when loading script afer default folder removed.
-3.Fixed operation name from "un-supported operation" to "idle" after click save.
-
+**Bug fixes & Optimizations**  
+* Fixed app crash issue when repeat times >2 or repeat time = 0  
+* Fixed app crash issue when loading script afer default folder removed.  
+* Fixed operation name from "un-supported operation" to "idle" after click save.  
+* Removed redundant packages to improve app loading speed.
 
 
 
