@@ -8,8 +8,10 @@ This tool enables test engineers design, edit and run game test script for mulit
 ## Setup Development Environment
 ### Prerequests:
 * Operating systems:  
+
     * Windows 10 (21H1 or newer)  
     * Windows 11 (21H2 or newer) 
+    * MacOS is not surpported yet
 
 * Python Development Environment:  
     * Python 3.7 or newer (Python 3.10 is not supported)
@@ -18,7 +20,12 @@ This tool enables test engineers design, edit and run game test script for mulit
 
 * 3rd Party Libraries:  
     * PyQt5  
+        * pip install PyQt5  
+        * pip install pyqt5-tools  
     * OpenCV  
+        * pip install opencv-python==4.5.3.56(Recommended) 
+    * Pillow:  
+        * pip install Pillow     
 ### Getting Started
 * Step 1: Download the source code and put them in one folder
 * Step 2: Create and activate a conda environment in cmd prompt.
