@@ -17,7 +17,7 @@ from threading import Thread
 import threading
 
 # Global variable define
-version = 'v1.1'
+version = 'v1.2'
 global_setting = class_define.GlobalSettings()
 app = QApplication(sys.argv)
 MainWindow = QMainWindow()
@@ -71,11 +71,9 @@ def status_check(ui):
 
 
 # Read script file in the folder
-def operation_list_generator(ui, start_step):
+def operation_list_generator(ui, start_step, stop_step):
     operation_list = []
-    total_line = ui.tableWidget_Script_Display.rowCount()
-
-    for i in range(start_step - 1, total_line):
+    for i in range(start_step - 1, stop_step-1):
         step = ui.tableWidget_Script_Display.item(i, 0).text()
         operation = ui.tableWidget_Script_Display.cellWidget(i, 1).currentText()
         execution_time = ui.tableWidget_Script_Display.item(i, 2).text()
@@ -248,7 +246,7 @@ def gui_init(ui):
         os.mkdir(IQA_path)
     ui.comboBox_Select_IQA.addItem('Enable')
     ui.comboBox_Select_IQA.addItem('Disable')
-    ui.comboBox_Select_IQA.setCurrentIndex(0)
+    ui.comboBox_Select_IQA.setCurrentIndex(1)
 
     ui.lineEdit_Threshold_Min.setText(default_IQA_threshold_min)
     ui.lineEdit_Threshold_Max.setText(default_IQA_threshold_max)
@@ -588,15 +586,24 @@ def script_run(ui):
         msg = str('[run]: run from step 1')
         ui.msg_print(msg)
         ui.lineEdit_Start_Step.setText('1')
-        return 0
     if ui.lineEdit_Start_Step.text() not in target_range:
         msg = str('[run]: invalid start step %s' % ui.lineEdit_Target_Step.text())
         ui.msg_print(msg)
         return 0
     start_step = int(ui.lineEdit_Start_Step.text())
 
+    if ui.lineEdit_Stop_Step.text() == '':
+        msg = str('[run]: Will run to last step')
+        ui.msg_print(msg)
+        ui.lineEdit_Stop_Step.setText(str(total_line))
+    if ui.lineEdit_Stop_Step.text() not in target_range:
+        msg = str('[run]: invalid start step %s' % ui.lineEdit_Target_Step.text())
+        ui.msg_print(msg)
+        return 0
+    stop_step = int(ui.lineEdit_Stop_Step.text())+1
+
     script_file_name = ui.lineEdit_Script_Name.text()
-    operation_list = operation_list_generator(UI, start_step)
+    operation_list = operation_list_generator(UI, start_step, stop_step)
 
     if operation_list == -1:
         msg = str("[run]: script: %s execution failed!" % script_file_name)
@@ -675,6 +682,38 @@ def script_refresh(ui):
                 ui.tableWidget_Script_Display.cellWidget(i, 1).setCurrentIndex(j+1)
 
 
+def single_step_run(ui):
+    total_line = ui.tableWidget_Script_Display.rowCount()
+    if total_line == 0:
+        msg = str('[single_run]: Nothing to remove, please add or load a script!')
+        ui.msg_print(msg)
+        return 0
+    target_range = []
+    for i in range(1, total_line + 1):
+        target_range.append(str(i))
+    if ui.lineEdit_Target_Step.text() == '':
+        msg = str('[single_run]: Please set a target step!')
+        ui.msg_print(msg)
+        return 0
+    if ui.lineEdit_Target_Step.text() not in target_range:
+        msg = str('[single_run]: invalid target step %s' % ui.lineEdit_Target_Step.text())
+        ui.msg_print(msg)
+        return 0
+    target_step = int(ui.lineEdit_Target_Step.text())
+    start_step = target_step
+    stop_step = start_step + 1
+    operation_list = operation_list_generator(ui, start_step, stop_step)
+    result = operation_execution(operation_list, pos_x, pos_y)
+    if result != 0:
+        msg = str("[single_run]: step: %d execution failed!" % target_step)
+        ui.msg_print(msg)
+        return 0
+    else:
+        msg = str("[single_run]: step %d execution complete!" % target_step)
+        UI.msg_print(msg)
+        return 0
+
+
 if __name__ == '__main__':
     if not windll.shell32.IsUserAnAdmin():
         windll.shell32.ShellExecuteW(
@@ -692,6 +731,7 @@ if __name__ == '__main__':
     UI.pushButton_Refresh.clicked.connect(partial(script_refresh, UI))
     UI.pushButton_Insert.clicked.connect(partial(script_insert, UI))
     UI.pushButton_Remove.clicked.connect(partial(script_remove, UI))
+    UI.pushButton_Run_Single_Step.clicked.connect(partial(single_step_run, UI))
 
     sys.exit(app.exec_())
 
