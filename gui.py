@@ -15,6 +15,8 @@ import tkinter
 import datetime
 from threading import Thread
 import threading
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill
 
 # Global variable define
 version = 'v1.2'
@@ -188,14 +190,38 @@ def IQA_image_process(threshold_min, threshold_max):
     lock.release()
     run_path = IQA_path + str(game_name + '_'+datetime.datetime.now().strftime('%m-%d-%H-%M-%S') + '\\')
     os.mkdir(run_path)
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "运行数据"
+    ws.cell(row = 1, column =1).value = "ImageName"
+    ws.cell(row = 1, column =2).value = "ImageTime"
+    ws.cell(row = 1, column =3).value = "ImageVar"
+    exl_row = 2
+    
     while stop_flag:
         image = ImageGrab.grab()
-        result = image_processing(threshold_min, threshold_max, image, UI)
+        result, imageVar = image_processing(threshold_min, threshold_max, image, UI)
+        
+        ws.cell(row=exl_row, column=1).value = str(im_num)
+        ws.cell(row=exl_row, column=2).value = str(datetime.datetime.now().strftime('%H:%M:%S'))
+        ws.cell(row=exl_row, column=3).value = str(int(imageVar))
+        
+        fille = PatternFill('solid', fgColor = 'FF00FF')
+        
         if result == 1:
             msg = str("[IQA]: Image %d fail detected!" % im_num)
             UI.msg_print(msg)
             image.save(run_path + str(im_num) + ".png")
-            im_num = im_num + 1
+            
+            ws.cell(row=exl_row, column=1).fill = fille
+            ws.cell(row=exl_row, column=2).fill = fille
+            ws.cell(row=exl_row, column=3).fill = fille
+            
+        im_num = im_num + 1
+        exl_row = exl_row + 1
+        wb.save(run_path + "运行数据.xlsx")
+            
         time.sleep(1)
     return 0
 

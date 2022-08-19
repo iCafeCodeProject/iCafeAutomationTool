@@ -1,17 +1,14 @@
 #!/user/bin/python3
-# -*- coding -*-
-# @Time    : 2022/5/5
-# @Author  :
-# @Site    : 
 # @File    : ImageTest.py
 # @Software: PyCharm
-# @Description:
+
 
 
 # 导入所需Package
 # import cv2
 from cv2 import resize, cvtColor, Laplacian, CV_64F, COLOR_BGR2GRAY, INTER_CUBIC
 import numpy as np
+
 
 
 def image_processing(threshold_min, threshold_max, image, ui):
@@ -21,9 +18,10 @@ def image_processing(threshold_min, threshold_max, image, ui):
     gray = cvtColor(imagenum, COLOR_BGR2GRAY)
     imageVar = Laplacian(gray, CV_64F).var()
     if imageVar < threshold_min or imageVar > threshold_max:
-        return 1
+        result = 1
     else:
-        return 0
+        result = 0
+    return result, imageVar
 
 
 # # 方法二：保存图片并判断
@@ -106,5 +104,4 @@ def image_processing(threshold_min, threshold_max, image, ui):
 #     data = readDataset('./image',)
 #     plt.imshow(data[0])
 #     plt.show()
-
 
